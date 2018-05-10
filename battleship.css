@@ -37,3 +37,7 @@ td.hit {
 td.sunk {
   background-color: black;
 }
+
+td.reveal {
+  background-color: #69f4cf;
+}

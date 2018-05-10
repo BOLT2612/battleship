@@ -56,19 +56,29 @@ function togglePlayer() {
 }
 
 function allShipsSunk(player) {
-  console.log('allShipsSunk()',  model.ships[player])
   return model.ships[player].reduce((pre, x) => pre && (x['hits'].indexOf('') === -1), true);
 }
 
 function markAsSunk(cellID, oneShip) {
   let prefix = cellID.slice(0,3);
-  console.log('markAsSunk()', 'prefix =', prefix);
   oneShip.forEach((x) => {
-    console.log(prefix + x)
     markCell(prefix + x, 'sunk');
   });
 }
 
+function reveal(player) {
+  let shipsArray = model.ships[player];
+  for (let i = 0; i < shipsArray.length; i++) {
+    let oneShipsPos = shipsArray[i]['location'];
+    let oneShipsHits = shipsArray[i]['hits'];
+    for (j = 0; j < oneShipsPos.length; j++) {
+      if (oneShipsHits.indexOf(oneShipsPos[j]) === -1) {
+        let prefix = player === 'p1' ? 'Two' : 'One';
+        document.getElementById(prefix+oneShipsPos[j]).setAttribute('class','reveal');
+      }
+    }
+  }
+}
 
 function markCell(cellID, result) {
   let currentCell = document.getElementById(cellID);
@@ -103,13 +113,11 @@ function fire(cellID) {
   }
   // check if coordinates match the location of any ship
   let shipsArray = model.ships[victim];
-  //console.log('HIT CHECKING', coordinates);
   for (let i = 0; i < shipsArray.length; i++) {
     let oneShip = shipsArray[i];
-    //console.log('ship number ',i,oneShip['location'])
     let shotResult = oneShip['location'].indexOf(coordinates);
     if (shotResult > -1) { 
-    console.log("DEFINITE HIT: ship index", shotResult);                      // HIT
+    //console.log("DEFINITE HIT: ship index", shotResult);                      // HIT
       oneShip['hits'][shotResult] = coordinates;
       if (oneShip['hits'].indexOf('') === -1) { // SUNK
         markAsSunk(cellID, oneShip['location']);
@@ -117,6 +125,7 @@ function fire(cellID) {
         if (allShipsSunk(victim)) {
           writeFireResult(player, 'WIN');          // WIN
           writeWinInstructions(player);
+          reveal(player);
           model.state = 'Game Over';
           return;
         }
@@ -136,9 +145,7 @@ function fire(cellID) {
 }
 
 function writeWinInstructions(player) {
-  //console.log(player + '_fire_instr');
   var x = document.getElementById(player + '_fire_instr');
-  //console.log('writeWinInstructions()', x);
   document.getElementById(player + '_fire_instr').textContent = 'YOU ARE THE WINNER!';
   let passivePlayer = player === 'p1' ? 'p2' : 'p1';
   document.getElementById(passivePlayer + '_fire_instr').textContent = 'Game Over: All your ships are sunk :-(';
@@ -195,7 +202,6 @@ function doesShipFit(coordinates, length, vertical) {
   if (vertical) {
     return ((Number.parseInt(coordinates.slice(0,1)) + length -1) > model.gridSize - 1) ? false : true;
   } else {
-    console.log('doesShipFit',Number.parseInt(coordinates.slice(1)) + length -1, model.gridSize)
     return ((Number.parseInt(coordinates.slice(1)) + length -1) > model.gridSize - 1) ? false : true;
   }
 }
@@ -214,7 +220,6 @@ function shipOverlap(player, tryPosition) {
 }
 
 function placeShip(player, coordinates, verticalShip) {
-  console.log('function placeShip:'); 
   var shipNum = checkWhichShipLeft(player);
   let shipLength = model.ships[player][shipNum].location.length;
   if (shipNum === -1) {
@@ -236,7 +241,6 @@ function placeShip(player, coordinates, verticalShip) {
       tryPos.push(row.toString() + (column + i).toString());
     }
   }
-  console.log('row', row, 'column', column, 'tryPos ',tryPos);
   let shipOnShip = shipOverlap(player, tryPos);
   if (shipOnShip !== '') {
       alert("Invalid Position: coordinates " + shipOnShip + " overlap with placed ship");
@@ -251,7 +255,6 @@ function placeShip(player, coordinates, verticalShip) {
   })
 
   if (checkWhichShipLeft(player) === -1) {
-    console.log("STATE CHANGE, model.state =", model.state);
     if (model.state === 'P1_Position') {
       model.state = 'Transition_To_p2';
     } else if (model.state === 'P2_Position') {
@@ -399,7 +402,6 @@ function gameClickHandler(event) {
     let isVertical = document.getElementById("vertical_p2").checked;
     if (event.target.id.search(/\bTwo\d{2}/) > -1) {
       // player gave coordinates for placing ship
-      //console.log("Detected click on " + event.target.id);
       placeShip('p2', event.target.id.slice(3), isVertical);
     } else {
       console.log("Not a valid click: ", event.target);
@@ -428,12 +430,15 @@ function gameClickHandler(event) {
     // ********************************************************************
     if (event.target.id.search(/\bTwo\d{2}/) > -1) {
       // player gave coordinates for placing ship
-      console.log("Detected click on " + event.target.id);
+      //console.log("Detected click on " + event.target.id);
       fire(event.target.id);
     } else {
       console.log("Not a valid shot: : ", event.target);
     }
   } else if (model.state === 'Game Over') {
+    // ********************************************************************
+    //                        WIN - GAME OVER 
+    // ********************************************************************
     console.log('GAME OVER');
   }
 }
