@@ -22,12 +22,12 @@ table caption {
   font-weight: bold;
   text-decoration: underline; 
   font-style: italic;
-  font-color: green;
+  font-color: blue;
   background-color: white;
 }
 
 td.miss {
-  background-color: grey;
+  background-color: #d5e2e1;
 }
 
 td.hit {

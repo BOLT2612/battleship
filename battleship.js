@@ -1,7 +1,5 @@
 // battleship.js
 
-// construct the game board
-
 const gridSize = 8;
 
 var element = function(id){
@@ -14,13 +12,15 @@ var player1 = element("Player1");
 var player2 = element("Player2");
 var p1_instruct = element("p1_instructions");
 var p2_instruct = element("p2_instructions");
+var grid1 = element("Grid1");
+var grid2 = element("Grid2");
 
 // model.ships.p1[0].location
 var model = {
   gridSize: 8,
   numShips: 4,
   shipsLength: [4,3,3,2],
-  state: 'P1_Position',     // Instructions, P1_Position, 'Transition_To_p2', P2_Position, P1_Go, P2_Go, Game_Over
+  state: 'P1_Position',     //P1_Position, 'Transition_To_p2', P2_Position, P1_Go, P2_Go, Game_Over
 
   ships: {
     // Player 1 ships
@@ -99,21 +99,26 @@ function fire(cellID) {
   // see if coordinate matches previous move
   if (model.shots[player].indexOf(coordinates) > -1) {      // ALREADY TAKEN
     alert("row " + coordinates.slice(0,1) + " column " + coordinates.slice(0,1) + " ALREADY TAKEN");
+    writeFireResult(player, 'ALREADY TAKEN');
     return;
   } else {
     model.shots[player].push(coordinates)  // record grid position of shot
   }
-
   // check if coordinates match the location of any ship
   let shipsArray = model.ships[victim];
+  //console.log('HIT CHECKING', coordinates);
   for (let i = 0; i < shipsArray.length; i++) {
     let oneShip = shipsArray[i];
+    //console.log('ship number ',i,oneShip['location'])
     let shotResult = oneShip['location'].indexOf(coordinates);
-    if (shotResult > -1) {                       // HIT
+    if (shotResult > -1) { 
+    console.log("DEFINITE HIT: ship index", shotResult);                      // HIT
       oneShip['hits'][shotResult] = coordinates;
       if (oneShip['hits'].indexOf('') === -1) { // SUNK
         markAsSunk(cellID, oneShip['location']);
-        if (allShipsSunk(victim)) {          // WIN
+        writeFireResult(player, 'SUNK');
+        if (allShipsSunk(victim)) {
+          writeFireResult(player, 'WIN');          // WIN
           writeWinInstructions(player);
           model.state = 'Game Over';
           return;
@@ -121,15 +126,16 @@ function fire(cellID) {
         togglePlayer();
         return;
       }
+      writeFireResult(player, 'HIT');
       markCell(cellID, 'hit');
       togglePlayer();
       return;
-    } else {                                 // MISS
-      markCell(cellID,'miss');
-      togglePlayer();
-      return;
-    }
+    } 
   }
+  writeFireResult(player, 'MISS');
+  markCell(cellID,'miss');                           // MISS
+  togglePlayer();
+  return;
 }
 
 function writeWinInstructions(player) {
@@ -138,10 +144,9 @@ function writeWinInstructions(player) {
   //console.log('writeWinInstructions()', x);
   document.getElementById(player + '_fire_instr').textContent = 'YOU ARE THE WINNER!';
   let passivePlayer = player === 'p1' ? 'p2' : 'p1';
-  document.getElementById(passivePlayer + '_fire_instr').textContent = 'All your ships are sunk :-(';
+  document.getElementById(passivePlayer + '_fire_instr').textContent = 'Game Over: All your ships are sunk :-(';
 
 }
-
 
 // All coordinates are "row" + "column"
 // This would appear as y, x in the x,y coordinate world
@@ -172,15 +177,11 @@ function buildAnOceanGrid(gridId, topText, gridPrefix) {
   }
   gameTable.appendChild(gameRow);
 
-  //make the successive rows with left column header
-  // followed by data columns
-
   for (let i = 0; i < gridSize; i++) {
     let gameRow = document.createElement("tr");
     let x = document.createElement("th");
     x.innerHTML = i.toString();
     gameRow.appendChild(x);
-
 
     for (let j = 0; j < gridSize; j++){
       let x = document.createElement("td");
@@ -219,7 +220,6 @@ function placeShip(player, coordinates, verticalShip) {
   console.log('function placeShip:'); 
   var shipNum = checkWhichShipLeft(player);
   let shipLength = model.ships[player][shipNum].location.length;
-  //console.log('shipNum',shipNum,'shipLength =',shipLength,'coordinates:',coordinates,'verticalShip', verticalShip);
   if (shipNum === -1) {
     alert("Player " + player + ": No more ships to place");
     return;
@@ -250,7 +250,6 @@ function placeShip(player, coordinates, verticalShip) {
   document.getElementById(player + '_text').innerHTML = createPlacementText(player, shipNum+1);
   model.ships[player][shipNum].location.forEach((x) => {
     let prefix = player === 'p1' ? 'One' : 'Two';
-    //document.getElementById(prefix + x).innerHTML = 'X';
     document.getElementById(prefix + x).innerHTML = shipNum+1;
   })
 
@@ -261,7 +260,6 @@ function placeShip(player, coordinates, verticalShip) {
     } else if (model.state === 'P2_Position') {
       model.state = 'Transition_To_P1_Go';
     }
-    //P1_Position, 'Transition_To_p2', P2_Position
   }
 }
 
@@ -270,7 +268,6 @@ function checkWhichShipLeft(playerNum) {
     if (pre === -1 && x.location[0] === '') return idx;
     else return pre;
   }, -1);
-  //console.log("DEBUG: checkWhichShipLeft returning ", retVal);
   return retVal;
 }
 
@@ -278,31 +275,50 @@ function createPlacementText(player, shipIdx) {
   console.log('createPlacementText(): shipIdx',shipIdx);
   if (shipIdx > -1 && shipIdx < model.numShips) {
     let temp = model.numShips - shipIdx;
-    return '' + temp + ' Ships to place - Placing ship of length ' + model.ships[player][shipIdx].location.length;
+    return '' + temp + ' Ships to place - Current Ship length = ' + model.ships[player][shipIdx].location.length + '.  A click places left or top part of ship';
   } else {
     return 'All ships placed for this player. \nClick Anywhere on grid to move to next step.';
   }
+}
+
+function writeFireResult(player, result) {
+  document.getElementById(player + '_fire_result').textContent = "last shot: " + result;
+  let passivePlayer = player === 'p1' ? 'p2' : 'p1';
+  document.getElementById(passivePlayer + '_fire_instr').textContent = '';
 }
 
 function writeFireInstructions(player) {
   console.log(player + '_fire_instr');
   var x = document.getElementById(player + '_fire_instr');
   console.log('writeFireInstructions()', x);
-  document.getElementById(player + '_fire_instr').textContent = 'Click grid to fire on that position';
+  document.getElementById(player + '_fire_instr').textContent = 'Use this grid to attack opponent: Click grid to fire';
   let passivePlayer = player === 'p1' ? 'p2' : 'p1';
   document.getElementById(passivePlayer + '_fire_instr').textContent = 'Please wait for player ' + player;
-
 }
 
 function setUpFireInstructions() {
+  // this should be refactored but I need to submit this very soon
   let fireInstr1 = document.createElement("p");
-  let fireInstr2 = document.createElement("p");
+  let fireResult1 = document.createElement("p");
   fireInstr1.setAttribute('id', 'p1_fire_instr');
   fireInstr1.textContent = '';
+  fireResult1.setAttribute('id', 'p1_fire_result');
+  fireResult1.setAttribute('class', 'fire_result');
+  fireResult1.textContent = '';
   p1_instruct.appendChild(fireInstr1);
+  document.getElementById('Player1').appendChild(fireResult1);
+
+  
+  let fireInstr2 = document.createElement("p");
+  let fireResult2 = document.createElement("p");
   fireInstr2.setAttribute('id', 'p2_fire_instr');
   fireInstr2.textContent = '';
+  fireResult2.setAttribute('id', 'p2_fire_result');
+  fireResult2.setAttribute('class', 'fire_result');
+  fireResult2.textContent = '';
   p2_instruct.appendChild(fireInstr2);
+  document.getElementById('Player2').appendChild(fireResult2);
+
 }
 
 function makePlacementInstructions(player){
@@ -363,27 +379,20 @@ function clearShipsFromGrid(player) {
 }
 
 function gameClickHandler(event) {
-    console.log('DEBUG: model.shots', model.shots);
 
   if (model.state === 'P1_Position') {
     // ********************************************************************
     //                        Place ships on Player 1 Grid
     // ********************************************************************
     let isVertical = document.getElementById("vertical_p1").checked;
-    console.log("vertical_p1 = ", isVertical);
     if (event.target.id.search(/\bOne\d{2}/) > -1) {
       // player gave coordinates for placing ship
       console.log("Detected click on " + event.target.id);
       placeShip('p1', event.target.id.slice(3), isVertical);
-      //createPlacementText('p1');
     } else {
-      console.log("DEBUG: Not a player move: ", event.target);
+      console.log("Not a valid click: ", event.target);
     }
   } else if (model.state === 'Transition_To_p2') {
-    //remove ship placement data from grid
-    // change instructions for player 1 to wait
-        console.log('Transition_To_p2')
-
     removePlacementInstructions('p1');
     clearShipsFromGrid('p1');
     makePlacementInstructions('p2')
@@ -394,23 +403,19 @@ function gameClickHandler(event) {
     //                        Place ships on Player 2 Grid
     // ********************************************************************
     let isVertical = document.getElementById("vertical_p2").checked;
-    console.log("vertical_p2 = ", isVertical);
     if (event.target.id.search(/\bTwo\d{2}/) > -1) {
       // player gave coordinates for placing ship
-      console.log("Detected click on " + event.target.id);
+      //console.log("Detected click on " + event.target.id);
       placeShip('p2', event.target.id.slice(3), isVertical);
-      //createPlacementText('p1');
     } else {
-      console.log("DEBUG: Not a player move: ", event.target);
+      console.log("Not a valid click: ", event.target);
     }
   } else if (model.state === 'Transition_To_P1_Go') {
-    console.log('Transition_To_P1_Go')
     removePlacementInstructions('p2');
     clearShipsFromGrid('p2');
     setUpFireInstructions();
     writeFireInstructions('p1');
     model.state = 'P1_Go';
-    console.log("TODO: Player 1 start the game");
 
   } else if (model.state === 'P1_Go') {
     // ********************************************************************
@@ -418,10 +423,10 @@ function gameClickHandler(event) {
     // ********************************************************************
     if (event.target.id.search(/\bOne\d{2}/) > -1) {
       // player gave coordinates for placing ship
-      console.log("Detected click on " + event.target.id);
+      //console.log("Detected click on " + event.target.id);
       fire(event.target.id);
     } else {
-      console.log("DEBUG: Not a player move: ", event.target);
+      console.log("Not a valid shot: ", event.target);
     }
   } else if (model.state === 'P2_Go') {
     // ********************************************************************
@@ -432,20 +437,17 @@ function gameClickHandler(event) {
       console.log("Detected click on " + event.target.id);
       fire(event.target.id);
     } else {
-      console.log("DEBUG: Not a player move: ", event.target);
+      console.log("Not a valid shot: : ", event.target);
     }
-    writeFireInstructions('p1');
-    model.state = 'P1_Go';
   } else if (model.state === 'Game Over') {
-    // Do nothing, GAME OVER
     console.log('GAME OVER');
   }
 }
 
 function init() {
-  let Grid1 = buildAnOceanGrid('Grid1', 'Player 1', 'One');
+  let Grid1 = buildAnOceanGrid('Grid1', 'Player 1 Grid', 'One');
   document.getElementById('Player1').appendChild(Grid1);
-  let Grid2 = buildAnOceanGrid('Grid2', 'Player 2', 'Two');
+  let Grid2 = buildAnOceanGrid('Grid2', 'Player 2 Grid', 'Two');
   document.getElementById('Player2').appendChild(Grid2);
   makePlacementInstructions('p1');
   document.getElementById('GameCenter').onclick = gameClickHandler;
