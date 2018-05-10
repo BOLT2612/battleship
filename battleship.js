@@ -93,9 +93,6 @@ function fire(cellID) {
   }
 
   let coordinates = cellID.slice(3);
-
-      console.log('DEBUG: model.shots', model.shots);
-      console.log('DEBUG: player = ', player, 'coordinates = ', coordinates);
   // see if coordinate matches previous move
   if (model.shots[player].indexOf(coordinates) > -1) {      // ALREADY TAKEN
     alert("row " + coordinates.slice(0,1) + " column " + coordinates.slice(0,1) + " ALREADY TAKEN");
@@ -272,7 +269,6 @@ function checkWhichShipLeft(playerNum) {
 }
 
 function createPlacementText(player, shipIdx) {
-  console.log('createPlacementText(): shipIdx',shipIdx);
   if (shipIdx > -1 && shipIdx < model.numShips) {
     let temp = model.numShips - shipIdx;
     return '' + temp + ' Ships to place - Current Ship length = ' + model.ships[player][shipIdx].location.length + '.  A click places left or top part of ship';
@@ -288,9 +284,7 @@ function writeFireResult(player, result) {
 }
 
 function writeFireInstructions(player) {
-  console.log(player + '_fire_instr');
   var x = document.getElementById(player + '_fire_instr');
-  console.log('writeFireInstructions()', x);
   document.getElementById(player + '_fire_instr').textContent = 'Use this grid to attack opponent: Click grid to fire';
   let passivePlayer = player === 'p1' ? 'p2' : 'p1';
   document.getElementById(passivePlayer + '_fire_instr').textContent = 'Please wait for player ' + player;
