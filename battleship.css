@@ -1,0 +1,39 @@
+div#GameCenter {
+  position: relative;
+  margin: auto;
+  text-align: center;
+}
+th, td {
+  padding: 15px;
+}
+table{
+  position: relative;
+  height: 1024;
+  margin: auto;
+  border-collapse: collapse;
+}
+table td{
+  background-color: aqua;
+  border: 1px solid white;
+} 
+table caption {
+  text-align: left;
+  font-size: large;
+  font-weight: bold;
+  text-decoration: underline; 
+  font-style: italic;
+  font-color: green;
+  background-color: white;
+}
+
+td.miss {
+  background-color: grey;
+}
+
+td.hit {
+  background-color: red;
+}
+
+td.sunk {
+  background-color: black;
+}
