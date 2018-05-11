@@ -291,6 +291,14 @@ function writeFireInstructions(player) {
   document.getElementById(player + '_fire_instr').textContent = 'Use this grid to attack opponent: Click grid to fire';
   let passivePlayer = player === 'p1' ? 'p2' : 'p1';
   document.getElementById(passivePlayer + '_fire_instr').textContent = 'Please wait for player ' + player;
+  var y = document.getElementsByTagName("caption");
+  console.log ('caption tags', y)
+  for (let i = 0; i < y.length; i++) {
+    let number = y.length - i;
+    y[i].innerHTML = 'Attack Player ' + number + ' Using This Grid';
+  }
+  // y[0].innerHTML = 'Attack Player 2 Using This Grid';
+  // y[1].innerHTML = 'Attack Player 1 Using This Grid';
 }
 
 function setUpFireInstructions() {
