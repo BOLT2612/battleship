@@ -292,38 +292,29 @@ function writeFireInstructions(player) {
   let passivePlayer = player === 'p1' ? 'p2' : 'p1';
   document.getElementById(passivePlayer + '_fire_instr').textContent = 'Please wait for player ' + player;
   var y = document.getElementsByTagName("caption");
-  console.log ('caption tags', y)
   for (let i = 0; i < y.length; i++) {
     let number = y.length - i;
     y[i].innerHTML = 'Attack Player ' + number + ' Using This Grid';
   }
-  // y[0].innerHTML = 'Attack Player 2 Using This Grid';
-  // y[1].innerHTML = 'Attack Player 1 Using This Grid';
+  document.getElementById('Player' + player.slice(1)).setAttribute('class', 'active');
+  document.getElementById('Player' + passivePlayer.slice(1)).removeAttribute('class');
 }
 
-function setUpFireInstructions() {
+function setUpFireInstructions(player) {
   // this should be refactored but I need to submit this very soon
-  let fireInstr1 = document.createElement("p");
-  let fireResult1 = document.createElement("p");
-  fireInstr1.setAttribute('id', 'p1_fire_instr');
-  fireInstr1.textContent = '';
-  fireResult1.setAttribute('id', 'p1_fire_result');
-  fireResult1.setAttribute('class', 'fire_result');
-  fireResult1.textContent = '';
-  p1_instruct.appendChild(fireInstr1);
-  document.getElementById('Player1').appendChild(fireResult1);
+  let playerNumber = Number.parseInt(player.slice(1));
+  let fireInstr = document.createElement("p");
+  let fireResult = document.createElement("p");
+  fireInstr.setAttribute('id', player + '_fire_instr');
+  fireInstr.textContent = '';
+  fireResult.setAttribute('id', player + '_fire_result');
+  fireResult.setAttribute('class', 'fire_result');
+  fireResult.textContent = '';
+  document.getElementById(player + '_instructions').appendChild(fireInstr);
+  document.getElementById('Player' + playerNumber).appendChild(fireResult);
 
-  
-  let fireInstr2 = document.createElement("p");
-  let fireResult2 = document.createElement("p");
-  fireInstr2.setAttribute('id', 'p2_fire_instr');
-  fireInstr2.textContent = '';
-  fireResult2.setAttribute('id', 'p2_fire_result');
-  fireResult2.setAttribute('class', 'fire_result');
-  fireResult2.textContent = '';
-  p2_instruct.appendChild(fireInstr2);
-  document.getElementById('Player2').appendChild(fireResult2);
-
+  var y = document.getElementsByTagName("caption");
+  y[playerNumber-1].innerHTML = 'Attack Player ' + playerNumber + ' Using This Grid';
 }
 
 function makePlacementInstructions(player){
@@ -392,7 +383,6 @@ function gameClickHandler(event) {
     let isVertical = document.getElementById("vertical_p1").checked;
     if (event.target.id.search(/\bOne\d{2}/) > -1) {
       // player gave coordinates for placing ship
-      console.log("Detected click on " + event.target.id);
       placeShip('p1', event.target.id.slice(3), isVertical);
     } else {
       console.log("Not a valid click: ", event.target);
@@ -417,7 +407,8 @@ function gameClickHandler(event) {
   } else if (model.state === 'Transition_To_P1_Go') {
     removePlacementInstructions('p2');
     clearShipsFromGrid('p2');
-    setUpFireInstructions();
+    setUpFireInstructions('p1');
+    setUpFireInstructions('p2');
     writeFireInstructions('p1');
     model.state = 'P1_Go';
 

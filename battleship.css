@@ -41,3 +41,7 @@ td.sunk {
 td.reveal {
   background-color: #69f4cf;
 }
+
+div.active {
+    border: 5px solid blue;
+}
