@@ -27,7 +27,7 @@ table caption {
 }
 
 td.miss {
-  background-color: #d5e2e1;
+  background-color: white;
 }
 
 td.hit {
@@ -39,7 +39,7 @@ td.sunk {
 }
 
 td.reveal {
-  background-color: #69f4cf;
+  background-color: #d5e2e1;;
 }
 
 div.active {
