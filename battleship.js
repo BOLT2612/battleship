@@ -72,7 +72,6 @@ function reveal(player) {
     let oneShipsHits = shipsArray[i]['hits'];
     for (j = 0; j < oneShipsPos.length; j++) {
       if (oneShipsHits.indexOf(oneShipsPos[j]) === -1) {
-        console.log( oneShipsPos[j],'oneShipHits = ',oneShipsHits);
         document.getElementById(prefix+oneShipsPos[j]).setAttribute('class','reveal');
       }
     }
@@ -104,16 +103,14 @@ function fire(cellID) {
   let shipsArray = model.ships[victim];
   for (let i = 0; i < shipsArray.length; i++) {
     let oneShip = shipsArray[i];
-    console.log(cellID.slice(4));
     let shotResult = oneShip['location'].indexOf(cellID.slice(3));
     if (shotResult > -1) { 
-    //console.log("DEFINITE HIT: ship index", shotResult);                      // HIT
-      oneShip['hits'][shotResult] = cellID.slice(3);
-      if (oneShip['hits'].indexOf('') === -1) { // SUNK
+      oneShip['hits'][shotResult] = cellID.slice(3);   // HIT
+      if (oneShip['hits'].indexOf('') === -1) {       // SUNK
         markAsSunk(cellID, oneShip['location']);
         writeFireResult(player, 'SUNK');
         if (allShipsSunk(victim)) {
-          writeFireResult(player, 'WIN');          // WIN
+          writeFireResult(player, 'WIN');             // WIN
           writeWinInstructions(player);
           reveal(player);
           model.state = 'Game Over';
@@ -141,15 +138,6 @@ function writeWinInstructions(player) {
   document.getElementById(passivePlayer + '_fire_instr').textContent = 'Game Over: All your ships are sunk :-(';
 
 }
-
-// All coordinates are "row" + "column"
-// This would appear as y, x in the x,y coordinate world
-// but row-column works better for table data.
-
-// row = Number.parseInt(coordinates.slice(0,1));
-// column = Number.parseInt(coordinates.slice(1));
-
-// the variable player should be 'p1' or 'p2'
 
 function buildAnOceanGrid(gridId, topText, gridPrefix) {
   // create the table which represents the ocean grid
@@ -189,7 +177,6 @@ function buildAnOceanGrid(gridId, topText, gridPrefix) {
 }
 
 function doesShipFit(coordinates, length, vertical) {
-  console.log('doesShipFit', coordinates, Number.parseInt(coordinates[0]) + length -1, model.gridSize);
   if (vertical) {
     return ((Number.parseInt(coordinates[0]) + length -1) > model.gridSize - 1) ? false : true;
   } else {
@@ -242,7 +229,6 @@ function placeShip(player, coordinates, verticalShip) {
   // update instructions on screen
   document.getElementById(player + '_text').innerHTML = createPlacementText(player, shipNum+1);
   model.ships[player][shipNum].location.forEach((x) => {
-    console.log('x = ', x)
     document.getElementById(player + '-' + x).innerHTML = shipNum+1;
   })
 
@@ -285,7 +271,8 @@ function writeFireInstructions(player) {
   var y = document.getElementsByTagName("caption");
   for (let i = 0; i < y.length; i++) {
     let number = y.length - i;
-    y[i].innerHTML = 'Attack Player ' + number + ' Using This Grid';
+    let playerNumber = i + 1;
+    y[i].innerHTML = 'Player ' + playerNumber +  ', Attack Player ' + number + ' Using This Grid';
   }
   document.getElementById('Player' + player.slice(1)).setAttribute('class', 'active');
   document.getElementById('Player' + passivePlayer.slice(1)).removeAttribute('class');
@@ -373,7 +360,6 @@ function gameClickHandler(event) {
     let isVertical = document.getElementById("vertical_p1").checked;
     if (event.target.id.search(/\bp1\-\d{1,}\-\d{1,}/) > -1) {
       // player gave coordinates for placing ship
-      console.log(event.target.id);
       placeShip('p1', event.target.id.split('-').slice(1), isVertical);
     } else {
       console.log("Not a valid click: ", event.target);
@@ -402,20 +388,18 @@ function gameClickHandler(event) {
     setUpFireInstructions('p2');
     writeFireInstructions('p1');
     model.state = 'P1_Go';
-    model.ships['p1'].forEach((x,idx) => {
-      console.log('p1 ship no.', idx + 1, x);
-    });
-    model.ships['p2'].forEach((x,idx) => {
-      console.log('p2 ship no.', idx + 1, x);
-    });
+    // model.ships['p1'].forEach((x,idx) => {
+    //   console.log('p1 ship no.', idx + 1, x);
+    // });
+    // model.ships['p2'].forEach((x,idx) => {
+    //   console.log('p2 ship no.', idx + 1, x);
+    // });
    
   } else if (model.state === 'P1_Go') {
     // ********************************************************************
     //                        Player 1 takes a shot 
     // ********************************************************************
     if (event.target.id.search(/\bp1\-\d{1,}\-\d{1,}/) > -1) {
-      // player gave coordinates for placing ship
-      //console.log("Detected click on " + event.target.id);
       fire(event.target.id);
     } else {
       console.log("Not a valid shot: ", event.target);
@@ -425,8 +409,6 @@ function gameClickHandler(event) {
     //                        Player 2 takes a shot 
     // ********************************************************************
     if (event.target.id.search(/\bp2\-\d{1,}\-\d{1,}/) > -1) {
-      // player gave coordinates for placing ship
-      //console.log("Detected click on " + event.target.id);
       fire(event.target.id);
     } else {
       console.log("Not a valid shot: : ", event.target);
