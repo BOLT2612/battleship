@@ -3,6 +3,9 @@ div#GameCenter {
   margin: auto;
   text-align: center;
 }
+h2 {
+  text-decoration: underline;
+}
 th, td {
   padding: 15px;
   min-width: 20px;

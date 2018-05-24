@@ -15,7 +15,7 @@ var grid2 = element("Grid2");
 // model.ships.p1[0].location
 var model = {
   gridSize: 12,
-  shipsLength: [5,4,3,3,2],   // each value represents the length in table cells or the respective ship
+  shipsLength: [5,4,3,2],   // each value represents the length in table cells or the respective ship
   state: 'P1_Position',     //P1_Position, 'Transition_To_p2', P2_Position, P1_Go, P2_Go, Game_Over
   // ships generated according to data in model.shipsLength
    ships: { p1: [], p2: [] },
@@ -76,6 +76,7 @@ function fire(cellID) {   // hit, miss, already taken, sunk, win
   let player = cellID.slice(0,2);
   let victim = player === 'p1' ? 'p2': 'p1';
 
+  // console.log(model.ships[player]);
   let coordinates = cellID.split('-').slice(1);
   // see if coordinate matches previous move
   if (model.shots[player].indexOf(cellID) > -1) {      // ALREADY TAKEN
@@ -237,7 +238,7 @@ function checkWhichShipLeft(playerNum) {
 function createPlacementText(player, shipIdx) {
   if (shipIdx > -1 && shipIdx < model.shipsLength.length) {
     let temp = model.shipsLength.length - shipIdx;
-    return '' + temp + ' Ships to place - Current Ship length = ' + model.ships[player][shipIdx].location.length + '.  A click places left or top part of ship';
+    return 'You have ' + temp + ' Ships to place - Current Ship length = ' + model.ships[player][shipIdx].location.length + '.  A click places left or top part of ship';
   } else {
     return 'All ships placed for this player. \nClick Anywhere on grid to move to next step.';
   }
@@ -253,7 +254,7 @@ function writeFireInstructions(player) {
   var x = document.getElementById(player + '_fire_instr');
   document.getElementById(player + '_fire_instr').textContent = 'Use this grid to attack opponent: Click grid to fire';
   let passivePlayer = player === 'p1' ? 'p2' : 'p1';
-  document.getElementById(passivePlayer + '_fire_instr').textContent = 'Please wait for player ' + player;
+  document.getElementById(passivePlayer + '_fire_instr').textContent = 'Please wait for Player ' + player[1];
   var y = document.getElementsByTagName("caption");
   for (let i = 0; i < y.length; i++) {
     let number = y.length - i;
@@ -303,7 +304,7 @@ function makePlacementInstructions(player){
 
   let waitInstr = document.createElement("p");
   waitInstr.setAttribute('id', passivePlayer + '_text');
-  waitInstr.textContent = 'Wait for player ' + player;
+  waitInstr.textContent = 'Wait for Player ' + player[1];
   passivePlInstr.appendChild(waitInstr);
 }
 
